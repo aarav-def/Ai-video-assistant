@@ -1,17 +1,26 @@
 [project]
 name = "video-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI Video Assistant"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "pydub>=0.25.1",
     "python-dotenv>=1.2.4",
-    "streamlit>=1.66.0",
-    "yt-dlp[default]>=2026.8.19",
+    "streamlit>=1.37.0",
+    "yt-dlp>=2024.8.6",
+    "openai-whisper==20240930",
+    "torch>=2.2.0",
+    "langchain>=0.2.14",
+    "langchain-core>=0.2.35",
+    "langchain-community>=0.2.12",
+    "langchain-mistralai>=0.1.12",
+    "langchain-huggingface>=0.0.3",
+    "sentence-transformers>=3.0.0",
+    "langchain-chroma>=0.1.2",
+    "chromadb>=0.5.5",
+    "reportlab>=4.2.2",
 ]
-
-
 
 [build-system]
 requires = ["uv_build>=0.13.0,<0.14.0"]
