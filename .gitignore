@@ -1,0 +1,63 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyd
+*.egg-info/
+build/
+dist/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# API keys and environment variables
+.env
+.env.*
+!.env.example
+
+# Downloaded YouTube audio/video
+downloads/
+*.mp3
+*.mp4
+*.wav
+*.m4a
+*.webm
+*.ogg
+
+# Vector database (ChromaDB)
+vector_db/
+chroma_db/
+chroma.sqlite3/
+
+# AI models and model caches
+models/
+.cache/
+cache/
+huggingface_cache/
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Logs and temporary files
+*.log
+logs/
+temp/
+tmp/
+*.tmp
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# VS Code and IDE settings
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
