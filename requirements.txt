@@ -3,6 +3,7 @@ streamlit>=1.37.0
 
 # YouTube audio download
 yt-dlp>=2024.8.6
+pydub>=0.25.1
 
 # Speech-to-text and translation
 openai-whisper==20250625
