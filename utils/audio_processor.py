@@ -7,9 +7,10 @@ DOWNLOAD_DIR = "downloades"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
+
 def download_youtube_audio(url: str) -> str:
-    ensure_deno()
-    
+    deno_path = ensure_deno()
+
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": os.path.join(
@@ -18,10 +19,20 @@ def download_youtube_audio(url: str) -> str:
         "noplaylist": True,
         "retries": 3,
         "extractor_retries": 3,
-        "remote_components": ["ejs:npm"],
-        "js_runtimes": {"deno": {}},
-    }
 
+        # JavaScript challenge support
+        "remote_components": ["ejs:npm"],
+        "js_runtimes": {
+            "deno": {"path": deno_path}
+        },
+
+        # Try alternative YouTube player clients
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["tv", "web_safari"]
+            }
+        },
+    }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -33,6 +44,7 @@ def download_youtube_audio(url: str) -> str:
         )
 
     return filename
+
 
 
 def convert_to_wav(input_path: str) -> str:
