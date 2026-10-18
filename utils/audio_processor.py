@@ -1,4 +1,4 @@
-
+from utils.deno_setup import ensure_deno
 import yt_dlp
 from pydub import AudioSegment
 import os
