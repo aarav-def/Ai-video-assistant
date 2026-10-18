@@ -8,6 +8,7 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
 def download_youtube_audio(url: str) -> str:
+    ensure_deno()
     
     ydl_opts = {
         "format": "bestaudio/best",
