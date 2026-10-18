@@ -8,17 +8,19 @@ os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
 def download_youtube_audio(url: str) -> str:
+    
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": os.path.join(
-            DOWNLOAD_DIR, "%(title)s.%(ext)s"
+            DOWNLOAD_DIR, "%(id)s.%(ext)s"
         ),
         "noplaylist": True,
-        "quiet": False,
         "retries": 3,
         "extractor_retries": 3,
         "remote_components": ["ejs:npm"],
+        "js_runtimes": {"deno": {}},
     }
+
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
