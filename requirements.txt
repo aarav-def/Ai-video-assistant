@@ -1,21 +1,21 @@
-# UI
+
 streamlit>=1.37.0
 
-# YouTube audio download
+# YouTube downloading and audio processing
 yt-dlp[default]
 pydub>=0.25.1
 
-# Speech-to-text and translation
+# Whisper speech-to-text
 openai-whisper==20250625
 torch>=2.2.0
 
-# LangChain + Mistral
+# LangChain and Mistral
 langchain>=0.2.14
 langchain-core>=0.2.35
 langchain-community>=0.2.12
 langchain-mistralai>=0.1.12
 
-# RAG pipeline
+# RAG and vector database
 langchain-huggingface>=0.0.3
 sentence-transformers>=3.0.0
 langchain-chroma>=0.1.2
