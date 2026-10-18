@@ -7,6 +7,7 @@ import html
 import os
 import re
 import tempfile
+from urllib.parse import urlparse, parse_qs
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -222,22 +223,110 @@ def tab_label(name: str, text) -> str:
     return f"{name} ({n})" if n else name
 
 
-def run_pipeline_ui(source: str, language: str) -> dict:
+def get_youtube_video_id(url: str) -> str | None:
+    """Extract a YouTube video ID from common YouTube URL formats."""
+    try:
+        parsed = urlparse(url)
+        host = parsed.netloc.lower().split(":")[0]
+
+        if host in {"youtu.be", "www.youtu.be"}:
+            video_id = parsed.path.strip("/").split("/")[0]
+        elif host.endswith("youtube.com"):
+            if parsed.path == "/watch":
+                video_id = parse_qs(parsed.query).get("v", [""])[0]
+            else:
+                match = re.match(
+                    r"^/(?:shorts|embed|live)/([^/?]+)",
+                    parsed.path,
+                )
+                video_id = match.group(1) if match else ""
+        else:
+            video_id = ""
+
+        return video_id if re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id) else None
+    except Exception:
+        return None
+
+
+def get_youtube_captions(url: str, language: str) -> str:
+    """Retrieve available YouTube captions when audio download is blocked."""
+    from youtube_transcript_api import YouTubeTranscriptApi
+
+    video_id = get_youtube_video_id(url)
+    if not video_id:
+        raise ValueError("Could not identify a valid YouTube video ID.")
+
+    preferred_languages = ["hi", "en"] if language.lower() == "hinglish" else ["en", "hi"]
+    transcript = YouTubeTranscriptApi().fetch(
+        video_id,
+        languages=preferred_languages,
+    )
+
+    text = " ".join(
+        item.text for item in transcript
+        if getattr(item, "text", "").strip()
+    ).strip()
+
+    if not text:
+        raise RuntimeError("The video has no accessible captions.")
+    return text
+
+
+def run_pipeline_ui(
+    source: str,
+    language: str,
+    allow_caption_fallback: bool = False,
+) -> dict:
     with st.status("Working on your video…", expanded=True) as status:
-        st.write("Fetching and splitting the audio")
-        chunks = process_input(source)
-        st.write("Transcribing speech")
-        transcript = transcribe_all(chunks, language)
+        transcript = None
+
+        try:
+            st.write("Fetching and splitting the audio")
+            chunks = process_input(source)
+
+            st.write("Transcribing speech with Whisper")
+            transcript = transcribe_all(chunks, language)
+
+        except Exception as audio_error:
+            if not allow_caption_fallback:
+                raise RuntimeError(
+                    f"Audio processing or transcription failed: {audio_error}"
+                ) from audio_error
+
+            st.write("Audio download failed. Trying available YouTube captions…")
+            try:
+                transcript = get_youtube_captions(source, language)
+                st.write("Captions retrieved successfully")
+            except Exception as caption_error:
+                raise RuntimeError(
+                    "YouTube audio could not be downloaded and captions "
+                    "could not be retrieved. Captions may be disabled, "
+                    "unavailable in the selected language, or blocked by "
+                    "YouTube. Please upload an audio/video file instead. "
+                    f"Download error: {audio_error}. "
+                    f"Caption error: {caption_error}"
+                ) from caption_error
+
+        if not transcript or not transcript.strip():
+            raise RuntimeError("No transcript was generated.")
+
         st.write("Writing the title and summary")
         title = generate_title(transcript)
         summary = summarize(transcript)
+
         st.write("Finding action items, decisions and open questions")
         action_items = extract_action_items(transcript)
         decisions = extract_key_decisions(transcript)
         questions = extract_questions(transcript)
+
         st.write("Preparing the chat")
         rag_chain = build_rag_chain(transcript)
-        status.update(label="Your video is ready", state="complete", expanded=False)
+        status.update(
+            label="Your video is ready",
+            state="complete",
+            expanded=False,
+        )
+
     return {
         "title": title,
         "transcript": transcript,
@@ -308,7 +397,11 @@ with tab_main:
     if go and source is not None:
         try:
             path = save_upload(source) if input_type == "Upload a file" else source
-            res = run_pipeline_ui(path, language)
+            res = run_pipeline_ui(
+                path,
+                language,
+                allow_caption_fallback=(input_type == "YouTube link"),
+            )
             meta = {
                 "label": label,
                 "language": language,
