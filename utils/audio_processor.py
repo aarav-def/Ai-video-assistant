@@ -35,10 +35,14 @@ def download_youtube_audio(url: str) -> str:
 
         # YouTube player clients
         "extractor_args": {
-            "youtube": {
-                "player_client": ["tv", "web_safari"]
-            }
-        },
+        "youtube": {
+            "player_client": [
+                "web_safari",
+                "web_embedded",
+                "-tv_downgraded"
+            ]
+        }
+    },
     }
 
     try:
